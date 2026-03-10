@@ -1,0 +1,21 @@
+name: Rust Tests
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: Run Workspace Tests
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Check Rust version
+        run: cargo --version
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Lint with Clippy
+        run: cargo clippy --workspace -- -D warnings
+      - name: Run all tests
+        run: cargo test --workspace
