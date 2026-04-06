@@ -52,13 +52,27 @@ impl TxtDataValues {
     }
 
     fn convert_from_txt(&self) -> Result<DataValues, ReadError> {
-        let tx_id = self.tx_id.clone().ok_or(ReadError)?;
-        let tx_type = self.tx_type.clone().ok_or(ReadError)?;
-        let from_user_id = self.from_user_id.clone().ok_or(ReadError)?;
-        let to_user_id = self.to_user_id.clone().ok_or(ReadError)?;
-        let amount = self.amount.clone().ok_or(ReadError)?;
-        let timestamp = self.timestamp.clone().ok_or(ReadError)?;
-        let status = self.status.clone().ok_or(ReadError)?;
+        let tx_id = self.tx_id.clone().ok_or(ReadError {
+            reason: "reader".to_owned(),
+        })?;
+        let tx_type = self.tx_type.clone().ok_or(ReadError {
+            reason: "reader".to_owned(),
+        })?;
+        let from_user_id = self.from_user_id.clone().ok_or(ReadError {
+            reason: "reader".to_owned(),
+        })?;
+        let to_user_id = self.to_user_id.clone().ok_or(ReadError {
+            reason: "reader".to_owned(),
+        })?;
+        let amount = self.amount.clone().ok_or(ReadError {
+            reason: "reader".to_owned(),
+        })?;
+        let timestamp = self.timestamp.clone().ok_or(ReadError {
+            reason: "reader".to_owned(),
+        })?;
+        let status = self.status.clone().ok_or(ReadError {
+            reason: "reader".to_owned(),
+        })?;
 
         Ok(DataValues::new(
             tx_id,
@@ -74,7 +88,9 @@ impl TxtDataValues {
 
     fn into_result(self) -> Result<Option<DataValues>, ReadError> {
         if self.has_missing_fields() {
-            Err(ReadError)
+            Err(ReadError {
+                reason: "reader".to_owned(),
+            })
         } else {
             Ok(Some(self.convert_from_txt()?))
         }
@@ -89,7 +105,9 @@ impl TxtDataValues {
                     let inner = &value[1..value.len() - 1];
                     self.description = Some(inner.to_string());
                 } else {
-                    return Err(ReadError);
+                    return Err(ReadError {
+                        reason: "reader".to_owned(),
+                    });
                 }
             } else {
                 let parse_value = |f: &str| -> Option<String> {
@@ -165,7 +183,9 @@ impl<W: Write> YPBankTxtWriter<W> {
 
 impl<R: Read> BaseReader for YPBankTxtReader<R> {
     fn read(&mut self) -> Result<Option<DataValues>, ReadError> {
-        let reader = self.reader.as_mut().ok_or(ReadError)?;
+        let reader = self.reader.as_mut().ok_or(ReadError {
+            reason: "reader".to_owned(),
+        })?;
 
         let mut txt_data_values = TxtDataValues::default();
 
@@ -174,7 +194,11 @@ impl<R: Read> BaseReader for YPBankTxtReader<R> {
             let result = reader.read_line(&mut line);
 
             match result {
-                Err(_) => return Err(ReadError),
+                Err(_) => {
+                    return Err(ReadError {
+                        reason: "reader".to_owned(),
+                    });
+                }
                 Ok(0) => return txt_data_values.into_result(),
                 _ => {
                     if line == "\n" {
@@ -194,13 +218,19 @@ impl<R: Read> BaseReader for YPBankTxtReader<R> {
 
 impl<W: Write> BaseWriter for YPBankTxtWriter<W> {
     fn write(&mut self, data_values: &DataValues) -> Result<(), WriteError> {
-        let writer = self.writer.as_mut().ok_or(WriteError)?;
+        let writer = self.writer.as_mut().ok_or(WriteError {
+            reason: "writer".to_owned(),
+        })?;
 
         let txt_data_values = TxtDataValues::new(data_values);
 
         let txt = txt_data_values.to_txt_format();
-        writeln!(writer, "{}", txt).map_err(|_| WriteError)?;
-        writer.flush().map_err(|_| WriteError)?;
+        writeln!(writer, "{}", txt).map_err(|_| WriteError {
+            reason: "writer".to_owned(),
+        })?;
+        writer.flush().map_err(|_| WriteError {
+            reason: "writer".to_owned(),
+        })?;
 
         Ok(())
     }

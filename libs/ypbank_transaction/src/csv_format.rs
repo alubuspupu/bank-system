@@ -69,7 +69,9 @@ impl<W: Write> YPBankCsvWriter<W> {
 
 impl<R: Read> BaseReader for YPBankCsvReader<R> {
     fn read(&mut self) -> Result<Option<DataValues>, ReadError> {
-        let reader = self.reader.as_mut().ok_or(ReadError)?;
+        let reader = self.reader.as_mut().ok_or(ReadError {
+            reason: "reader".to_owned(),
+        })?;
 
         let mut deserializer = reader.deserialize();
 
@@ -86,7 +88,11 @@ impl<R: Read> BaseReader for YPBankCsvReader<R> {
 
                     return Ok(Some(data));
                 }
-                Some(Err(_)) => return Err(ReadError),
+                Some(Err(_)) => {
+                    return Err(ReadError {
+                        reason: "reader".to_owned(),
+                    });
+                }
                 None => return Ok(None),
             }
         }
@@ -95,11 +101,15 @@ impl<R: Read> BaseReader for YPBankCsvReader<R> {
 
 impl<W: Write> BaseWriter for YPBankCsvWriter<W> {
     fn write(&mut self, data_values: &DataValues) -> Result<(), WriteError> {
-        let writer = self.writer.as_mut().ok_or(WriteError)?;
+        let writer = self.writer.as_mut().ok_or(WriteError {
+            reason: "writer".to_owned(),
+        })?;
 
         writer
             .write_record(data_values.as_record())
-            .map_err(|_| WriteError)
+            .map_err(|_| WriteError {
+                reason: "writer".to_owned(),
+            })
     }
 }
 

@@ -173,15 +173,21 @@ impl<W: Write> YPBankBinWriter<W> {
 
 impl<R: Read> BaseReader for YPBankBinReader<R> {
     fn read(&mut self) -> Result<Option<DataValues>, ReadError> {
-        let reader = self.reader.as_mut().ok_or(ReadError)?;
+        let reader = self.reader.as_mut().ok_or(ReadError {
+            reason: "reader".to_owned(),
+        })?;
 
         let mut magic = [0u8; 4];
         reader
             .read_exact(&mut magic)
-            .map_err(|_| ReadError)
+            .map_err(|_| ReadError {
+                reason: "reader".to_owned(),
+            })
             .and_then(|_| {
                 if &magic != b"YPBN" {
-                    return Err(ReadError);
+                    return Err(ReadError {
+                        reason: "reader".to_owned(),
+                    });
                 };
 
                 Ok(())
@@ -189,54 +195,90 @@ impl<R: Read> BaseReader for YPBankBinReader<R> {
 
         let size = reader
             .read_u32::<BigEndian>()
-            .map_err(|_| ReadError)
+            .map_err(|_| ReadError {
+                reason: "reader".to_owned(),
+            })
             .and_then(|val| {
                 if val < 46 {
-                    return Err(ReadError);
+                    return Err(ReadError {
+                        reason: "reader".to_owned(),
+                    });
                 };
                 Ok(val)
             })?;
 
-        let tx_id = reader.read_u64::<BigEndian>().map_err(|_| ReadError)?;
+        let tx_id = reader.read_u64::<BigEndian>().map_err(|_| ReadError {
+            reason: "reader".to_owned(),
+        })?;
 
         let type_val = {
-            let val = reader.read_u8().map_err(|_| ReadError)?;
+            let val = reader.read_u8().map_err(|_| ReadError {
+                reason: "reader".to_owned(),
+            })?;
 
             if val > 2 {
-                return Err(ReadError);
+                return Err(ReadError {
+                    reason: "reader".to_owned(),
+                });
             }
 
-            let bin_type = BinDataTypes::from_u8(val).map_err(|_| ReadError)?;
-            bin_type.to_string().map_err(|_| ReadError)?
+            let bin_type = BinDataTypes::from_u8(val).map_err(|_| ReadError {
+                reason: "reader".to_owned(),
+            })?;
+            bin_type.to_string().map_err(|_| ReadError {
+                reason: "reader".to_owned(),
+            })?
         };
 
-        let from_user_id = reader.read_u64::<BigEndian>().map_err(|_| ReadError)?;
-        let to_user_id = reader.read_u64::<BigEndian>().map_err(|_| ReadError)?;
-        let amount = reader.read_i64::<BigEndian>().map_err(|_| ReadError)?;
-        let timestamp = reader.read_u64::<BigEndian>().map_err(|_| ReadError)?;
+        let from_user_id = reader.read_u64::<BigEndian>().map_err(|_| ReadError {
+            reason: "reader".to_owned(),
+        })?;
+        let to_user_id = reader.read_u64::<BigEndian>().map_err(|_| ReadError {
+            reason: "reader".to_owned(),
+        })?;
+        let amount = reader.read_i64::<BigEndian>().map_err(|_| ReadError {
+            reason: "reader".to_owned(),
+        })?;
+        let timestamp = reader.read_u64::<BigEndian>().map_err(|_| ReadError {
+            reason: "reader".to_owned(),
+        })?;
 
         let status = {
-            let val = reader.read_u8().map_err(|_| ReadError)?;
+            let val = reader.read_u8().map_err(|_| ReadError {
+                reason: "reader".to_owned(),
+            })?;
 
             if val > 2 {
-                return Err(ReadError);
+                return Err(ReadError {
+                    reason: "reader".to_owned(),
+                });
             }
 
-            let bin_type = BinDataStatus::from_u8(val).map_err(|_| ReadError)?;
-            bin_type.to_string().map_err(|_| ReadError)?
+            let bin_type = BinDataStatus::from_u8(val).map_err(|_| ReadError {
+                reason: "reader".to_owned(),
+            })?;
+            bin_type.to_string().map_err(|_| ReadError {
+                reason: "reader".to_owned(),
+            })?
         };
 
-        let desc_size = reader.read_u32::<BigEndian>().map_err(|_| ReadError)?;
+        let desc_size = reader.read_u32::<BigEndian>().map_err(|_| ReadError {
+            reason: "reader".to_owned(),
+        })?;
 
         if desc_size + 46 != size {
-            return Err(ReadError);
+            return Err(ReadError {
+                reason: "reader".to_owned(),
+            });
         }
 
         let mut s: Option<String> = None;
 
         if desc_size != 0 {
             let mut description = vec![0u8; desc_size as usize];
-            reader.read(&mut description).map_err(|_| ReadError)?;
+            reader.read(&mut description).map_err(|_| ReadError {
+                reason: "reader".to_owned(),
+            })?;
             s = Some(String::from_utf8_lossy(&description).into_owned());
         }
 
@@ -255,45 +297,73 @@ impl<R: Read> BaseReader for YPBankBinReader<R> {
 
 impl<W: Write> BaseWriter for YPBankBinWriter<W> {
     fn write(&mut self, data_values: &DataValues) -> Result<(), WriteError> {
-        let writer = self.writer.as_mut().ok_or(WriteError)?;
+        let writer = self.writer.as_mut().ok_or(WriteError {
+            reason: "writer".to_owned(),
+        })?;
 
-        let bin_data = BinDataValues::from_data_values(data_values).map_err(|_| WriteError)?;
+        let bin_data = BinDataValues::from_data_values(data_values).map_err(|_| WriteError {
+            reason: "writer".to_owned(),
+        })?;
 
-        writer.write_all(b"YPBN").map_err(|_| WriteError)?;
+        writer.write_all(b"YPBN").map_err(|_| WriteError {
+            reason: "writer".to_owned(),
+        })?;
         writer
             .write_u32::<BigEndian>(46 + bin_data.description.len() as u32)
-            .map_err(|_| WriteError)?;
+            .map_err(|_| WriteError {
+                reason: "writer".to_owned(),
+            })?;
         writer
             .write_u64::<BigEndian>(bin_data.tx_id)
-            .map_err(|_| WriteError)?;
+            .map_err(|_| WriteError {
+                reason: "writer".to_owned(),
+            })?;
         writer
             .write_u8(bin_data.tx_type as u8)
-            .map_err(|_| WriteError)?;
+            .map_err(|_| WriteError {
+                reason: "writer".to_owned(),
+            })?;
         writer
             .write_u64::<BigEndian>(bin_data.from_user_id)
-            .map_err(|_| WriteError)?;
+            .map_err(|_| WriteError {
+                reason: "writer".to_owned(),
+            })?;
         writer
             .write_u64::<BigEndian>(bin_data.to_user_id)
-            .map_err(|_| WriteError)?;
+            .map_err(|_| WriteError {
+                reason: "writer".to_owned(),
+            })?;
         writer
             .write_i64::<BigEndian>(bin_data.amount)
-            .map_err(|_| WriteError)?;
+            .map_err(|_| WriteError {
+                reason: "writer".to_owned(),
+            })?;
         writer
             .write_u64::<BigEndian>(bin_data.timestamp)
-            .map_err(|_| WriteError)?;
+            .map_err(|_| WriteError {
+                reason: "writer".to_owned(),
+            })?;
         writer
             .write_u8(bin_data.status as u8)
-            .map_err(|_| WriteError)?;
+            .map_err(|_| WriteError {
+                reason: "writer".to_owned(),
+            })?;
 
         let desc_len = bin_data.description.len() as u32;
         writer
             .write_u32::<BigEndian>(desc_len)
-            .map_err(|_| WriteError)?;
+            .map_err(|_| WriteError {
+                reason: "writer".to_owned(),
+            })?;
         writer
             .write_all(&bin_data.description)
-            .map_err(|_| WriteError)?;
+            .map_err(|_| WriteError {
+                reason: "writer".to_owned(),
+            })?;
 
-        writer.flush().map_err(|_| WriteError)?;
+        writer.flush().map_err(|_| WriteError {
+            reason: "writer".to_owned(),
+        })?;
 
         Ok(())
     }

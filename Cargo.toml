@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "libs/ypbank_cli",
     "libs/ypbank_transaction",
 ]
 
@@ -11,3 +12,4 @@ edition = "2024"
 authors = ["Konkina Alina <alina.konckina@gmail.com>"]
 
 [workspace.dependencies]
+ypbank_transaction = { path = "libs/ypbank_transaction" }

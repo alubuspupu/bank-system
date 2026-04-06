@@ -20,7 +20,7 @@ fn get_reader(args: Vec<String>) -> Result<YPBankReader<File>, String> {
 
     let file = File::open(&args[i]).map_err(|_| format!("Can't open file via path {}", args[1]))?;
 
-    i = match "--input-format" {
+    i = match "--in-format" {
         val if val == args[1].as_str() => 2,
         val if val == args[3].as_str() => 4,
         val if val == args[5].as_str() => 6,

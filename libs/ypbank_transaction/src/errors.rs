@@ -7,11 +7,17 @@ impl Error for ReadError {}
 
 /// Ошибка чтения данных из файла
 #[derive(Debug)]
-pub struct ReadError;
+pub struct ReadError {
+    pub reason: String,
+}
 
 impl fmt::Display for ReadError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "unable to read information from read buffer")
+        write!(
+            f,
+            "unable to read information from read buffer, reason: {}",
+            self.reason
+        )
     }
 }
 
@@ -19,11 +25,17 @@ impl Error for WriteError {}
 
 /// Ошибка записи данных в файл
 #[derive(Debug)]
-pub struct WriteError;
+pub struct WriteError {
+    pub reason: String,
+}
 
 impl fmt::Display for WriteError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "unable to write information from file")
+        write!(
+            f,
+            "unable to write information from file, reason: {}",
+            self.reason
+        )
     }
 }
 

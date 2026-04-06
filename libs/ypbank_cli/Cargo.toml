@@ -1,0 +1,13 @@
+[package]
+name = "ypbank_cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "ypbank_comparer"     
+path = "src/main.rs"
+
+[dependencies]
+ypbank_transaction = { workspace = true }
+regex = "1"
