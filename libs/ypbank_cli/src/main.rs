@@ -67,7 +67,7 @@ fn get_readers(args: &[String]) -> Result<HashMap<&String, YPBankReader<File>>, 
 }
 
 fn extract_id(s: &str) -> usize {
-    let re = Regex::new(r"\d+").unwrap();
+    let re = Regex::new(r"\d+").expect("Valid regex pattern");
     re.find(s)
         .and_then(|m| m.as_str().parse::<usize>().ok())
         .unwrap_or(0)

@@ -69,11 +69,7 @@ impl DataValues {
             &self.amount,
             &self.timestamp,
             &self.status,
-            if self.description.is_none() {
-                ""
-            } else {
-                self.description.as_deref().unwrap()
-            },
+            self.description.as_deref().unwrap_or(""),
         ]
     }
 }
