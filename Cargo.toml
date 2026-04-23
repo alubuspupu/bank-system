@@ -1,10 +1,16 @@
 [workspace]
 members = [
     "libs/ypbank_cli",
-    "libs/ypbank_transaction",
+    "libs/ypbank_transaction", 
+    "streaming_quotes_project",
 ]
 
 resolver = "2"
+
+[profile.dev]
+opt-level = 0      # Отключаем оптимизации (чтобы переменные не исчезали)
+debug = true       # Включаем полную отладочную информацию
+split-debuginfo = "unpacked" # Ускоряет поиск символов на Linux/macOS
 
 [workspace.package]
 version = "0.1.0"
